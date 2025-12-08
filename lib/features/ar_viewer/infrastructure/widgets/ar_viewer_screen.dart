@@ -78,8 +78,16 @@ class _ARViewerScreenState extends State<ARViewerScreen> with WidgetsBindingObse
       );
 
       await _cameraController!.initialize();
+      
+      final minZoom = await _cameraController!.getMinZoomLevel();
+      final maxZoom = await _cameraController!.getMaxZoomLevel();
+      final initialZoom = 2.0.clamp(minZoom, maxZoom);
+      await _cameraController!.setZoomLevel(initialZoom);
 
       if (mounted) {
+        final presenter = context.read<ARViewerPresenter>();
+        presenter.setCameraZoomLimits(minZoom, maxZoom);
+        presenter.setCameraZoom(initialZoom);
         setState(() {
           _isCameraInitialized = true;
         });
@@ -88,6 +96,14 @@ class _ARViewerScreenState extends State<ARViewerScreen> with WidgetsBindingObse
       setState(() {
         _errorMessage = 'Error initializing camera: $e';
       });
+    }
+  }
+
+  Future<void> _onCameraZoomChanged(double zoom) async {
+    final presenter = context.read<ARViewerPresenter>();
+    presenter.setCameraZoom(zoom);
+    if (_cameraController != null && _cameraController!.value.isInitialized) {
+      await _cameraController!.setZoomLevel(zoom);
     }
   }
 
@@ -122,6 +138,7 @@ class _ARViewerScreenState extends State<ARViewerScreen> with WidgetsBindingObse
             _buildOverlayImage(),
             _buildHorizontalBar(),
             _buildVerticalBar(),
+            _buildCameraZoomSlider(),
             _buildControlPanel(),
             _buildLevelIndicator(),
           ],
@@ -224,6 +241,60 @@ class _ARViewerScreenState extends State<ARViewerScreen> with WidgetsBindingObse
           builder: (context, presenter, child) {
             return VerticalBalanceBar(
               balance: presenter.orientation.verticalBalance,
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCameraZoomSlider() {
+    return Positioned(
+      left: 8,
+      top: 0,
+      bottom: 0,
+      child: Center(
+        child: Consumer<ARViewerPresenter>(
+          builder: (context, presenter, child) {
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.camera, color: Colors.white70, size: 16),
+                  const SizedBox(height: 4),
+                  RotatedBox(
+                    quarterTurns: 3,
+                    child: SizedBox(
+                      width: 120,
+                      child: SliderTheme(
+                        data: SliderThemeData(
+                          trackHeight: 3,
+                          thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                          activeTrackColor: Colors.white,
+                          inactiveTrackColor: Colors.white24,
+                          thumbColor: Colors.white,
+                        ),
+                        child: Slider(
+                          value: presenter.cameraZoom,
+                          min: presenter.minCameraZoom,
+                          max: presenter.maxCameraZoom,
+                          onChanged: _onCameraZoomChanged,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${presenter.cameraZoom.toStringAsFixed(1)}x',
+                    style: const TextStyle(color: Colors.white70, fontSize: 10),
+                  ),
+                ],
+              ),
             );
           },
         ),

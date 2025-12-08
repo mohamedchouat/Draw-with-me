@@ -15,6 +15,9 @@ class ARViewerPresenter extends ChangeNotifier {
   double _imageScale = 1.0;
   Offset _imageOffset = Offset.zero;
   bool _isLocked = false;
+  double _cameraZoom = 1.0;
+  double _minCameraZoom = 1.0;
+  double _maxCameraZoom = 5.0;
   
   StreamSubscription? _orientationSubscription;
 
@@ -24,6 +27,9 @@ class ARViewerPresenter extends ChangeNotifier {
   double get imageScale => _imageScale;
   Offset get imageOffset => _imageOffset;
   bool get isLocked => _isLocked;
+  double get cameraZoom => _cameraZoom;
+  double get minCameraZoom => _minCameraZoom;
+  double get maxCameraZoom => _maxCameraZoom;
 
   void start() {
     _updateOrientation.start();
@@ -70,6 +76,17 @@ class ARViewerPresenter extends ChangeNotifier {
 
   void toggleLock() {
     _isLocked = !_isLocked;
+    notifyListeners();
+  }
+
+  void setCameraZoomLimits(double min, double max) {
+    _minCameraZoom = min;
+    _maxCameraZoom = max;
+    _cameraZoom = _cameraZoom.clamp(min, max);
+  }
+
+  void setCameraZoom(double zoom) {
+    _cameraZoom = zoom.clamp(_minCameraZoom, _maxCameraZoom);
     notifyListeners();
   }
 
