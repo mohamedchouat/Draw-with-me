@@ -14,6 +14,7 @@ class ARViewerPresenter extends ChangeNotifier {
   double _imageOpacity = 0.5;
   double _imageScale = 1.0;
   Offset _imageOffset = Offset.zero;
+  bool _isLocked = false;
   
   StreamSubscription? _orientationSubscription;
 
@@ -22,6 +23,7 @@ class ARViewerPresenter extends ChangeNotifier {
   double get imageOpacity => _imageOpacity;
   double get imageScale => _imageScale;
   Offset get imageOffset => _imageOffset;
+  bool get isLocked => _isLocked;
 
   void start() {
     _updateOrientation.start();
@@ -42,23 +44,32 @@ class ARViewerPresenter extends ChangeNotifier {
   }
 
   void setImageOpacity(double opacity) {
+    if (_isLocked) return;
     _imageOpacity = opacity.clamp(0.0, 1.0);
     notifyListeners();
   }
 
   void setImageScale(double scale) {
+    if (_isLocked) return;
     _imageScale = scale.clamp(0.5, 3.0);
     notifyListeners();
   }
 
   void updateImageOffset(Offset delta) {
+    if (_isLocked) return;
     _imageOffset += delta;
     notifyListeners();
   }
 
   void resetImagePosition() {
+    if (_isLocked) return;
     _imageOffset = Offset.zero;
     _imageScale = 1.0;
+    notifyListeners();
+  }
+
+  void toggleLock() {
+    _isLocked = !_isLocked;
     notifyListeners();
   }
 

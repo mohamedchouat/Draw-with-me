@@ -5,7 +5,8 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:drawwithme/features/ar_viewer/adapters/ar_viewer_presenter.dart';
-import 'package:drawwithme/widgets/sensor_bar.dart';
+import 'package:drawwithme/widgets/horizontal_balance_bar.dart';
+import 'package:drawwithme/widgets/vertical_balance_bar.dart';
 import 'package:drawwithme/widgets/control_panel.dart';
 
 class ARViewerScreen extends StatefulWidget {
@@ -119,8 +120,10 @@ class _ARViewerScreenState extends State<ARViewerScreen> with WidgetsBindingObse
           children: [
             _buildCameraPreview(),
             _buildOverlayImage(),
-            _buildSensorBar(),
+            _buildHorizontalBar(),
+            _buildVerticalBar(),
             _buildControlPanel(),
+            _buildLevelIndicator(),
           ],
         ),
       ),
@@ -194,36 +197,92 @@ class _ARViewerScreenState extends State<ARViewerScreen> with WidgetsBindingObse
     );
   }
 
-  Widget _buildSensorBar() {
+  Widget _buildHorizontalBar() {
     return Positioned(
-      top: 16,
-      right: 16,
-      child: Consumer<ARViewerPresenter>(
-        builder: (context, presenter, child) {
-          return SensorBar(orientation: presenter.orientation);
-        },
+      top: 8,
+      left: 0,
+      right: 0,
+      child: Center(
+        child: Consumer<ARViewerPresenter>(
+          builder: (context, presenter, child) {
+            return HorizontalBalanceBar(
+              balance: presenter.orientation.horizontalBalance,
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildVerticalBar() {
+    return Positioned(
+      right: 8,
+      top: 0,
+      bottom: 0,
+      child: Center(
+        child: Consumer<ARViewerPresenter>(
+          builder: (context, presenter, child) {
+            return VerticalBalanceBar(
+              balance: presenter.orientation.verticalBalance,
+            );
+          },
+        ),
       ),
     );
   }
 
   Widget _buildControlPanel() {
     return Positioned(
-      bottom: 16,
-      left: 16,
-      right: 16,
-      child: Consumer<ARViewerPresenter>(
-        builder: (context, presenter, child) {
-          return Center(
-            child: ControlPanel(
+      bottom: 8,
+      left: 0,
+      right: 0,
+      child: Center(
+        child: Consumer<ARViewerPresenter>(
+          builder: (context, presenter, child) {
+            return ControlPanel(
               opacity: presenter.imageOpacity,
               scale: presenter.imageScale,
+              isLocked: presenter.isLocked,
               onPickImage: _pickImage,
               onOpacityChanged: presenter.setImageOpacity,
               onScaleChanged: presenter.setImageScale,
               onReset: presenter.resetImagePosition,
-            ),
-          );
-        },
+              onToggleLock: presenter.toggleLock,
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLevelIndicator() {
+    return Positioned(
+      top: 40,
+      left: 0,
+      right: 0,
+      child: Center(
+        child: Consumer<ARViewerPresenter>(
+          builder: (context, presenter, child) {
+            if (!presenter.orientation.isLevel) {
+              return const SizedBox.shrink();
+            }
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.green.withValues(alpha: 0.8),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Text(
+                '✓ LEVEL',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            );
+          },
+        ),
       ),
     );
   }
