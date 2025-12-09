@@ -2,9 +2,9 @@
 
 ## 📷 Screenshots
 
-| Camera View | Tracing Mode |
-|-------------|--------------|
-| *Camera preview with balance indicators* | *Overlay image for tracing* |
+| Sample |
+|--------|
+| <img src="https://github.com/mohamedchouat/Draw-with-me/blob/main/screens/Screenshot.jpg" width="200"/> |
 
 **DrawWithMe** is a modern Flutter application designed to help artists and hobbyists trace images onto paper using their phone's camera as a lightbox. The app overlays any image from your gallery onto the live camera feed, allowing you to trace contours with precision.
 
